@@ -1,59 +1,68 @@
 const CSVToJSON = require('csvtojson');
 const fs = require('fs')
-let clothes = './styles.json'
-let images = './images.json'
 
-async function trunToFileCsv() {
+CsvToAlteredJSON('clothes.json')
+
+async function CsvToAlteredJSON(fileName) {
+    const stylesJson = await csvFileToJson('styles.csv')
+    const imagesJson = await csvFileToJson('images.csv')
+
+    const newJsonArray = joinJson(stylesJson, imagesJson)
+
+    writeJsonFile(newJsonArray, fileName)
+}
+
+// step 1: using CSVToJSON library to turn the CSV to JSON, and return the new JSON
+function csvFileToJson(csvName) {
     try {
-        const images = await CSVToJSON().fromFile('images.csv');
-
-        fs.writeFile(images, JSON.stringify(images, null, 2), (err) => {
-            if (err) {
-                throw err;
-            }
-            console.log("JSON array is saved.");
-        });
+        const jsonArr = CSVToJSON().fromFile(csvName);
+        console.log("JSON array is saved.");
+        return jsonArr
 
     } catch (err) {
         console.log(err);
     }
 };
 
-function readAndParse(file) {
-    const jsonArr = fs.readFileSync(file);
-    const parsedJsonArr = JSON.parse(jsonArr);
-    return parsedJsonArr
-}
+// get information from another json array and add new parameters to the styles array  
+function joinJson(stylesJson, imagesJson) {
+    let newStylesArr = stylesJson.slice(0, 100)
 
-function joinJson() {
-    var clothesJson = readAndParse(clothes)
-    let newClothesArr = clothesJson.slice(0, 100)
-   
-    newClothesArr.forEach(item => {
+    newStylesArr.forEach(item => {
         var itemId = item.id + ".jpg"
-        const imagelink = getImageLink(itemId)        
+        const imagelink = getImageLink(itemId, imagesJson)
+        const price = getPrice()
         item['image'] = imagelink
+        item['price'] = price
     });
 
-    fs.writeFile('clothes.json', JSON.stringify(newClothesArr, null, 2), (err) => {
-        if (err) {
-            throw err;
-        }
-        console.log("JSON array is saved.");
-    });
+    return newStylesArr
 
 }
 
-function getImageLink(styleId) {
-    var imagesJson = readAndParse(images)
-
-    var imageLink = imagesJson.find(image => {
+// get the image link from the image Json array and return the image link
+function getImageLink(styleId, Json) {
+    var imageLink = Json.find(image => {
         if (image.filename === styleId) {
             var imageLink = image.link
             return imageLink
-        } 
+        }
     })
     return imageLink
 }
 
-joinJson()
+// return random price up to 250
+function getPrice() {
+    var price = Math.floor(Math.random() * 250)
+    return price
+}
+
+// create a new JSON file
+function writeJsonFile(Json, name) {
+    fs.writeFile(name, JSON.stringify(Json, null, 2), (err) => {
+        if (err) console.log(err)
+        else {
+            console.log("JSON array is saved.");
+        }
+    });
+}
