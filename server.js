@@ -16,7 +16,6 @@ async function CsvToAlteredJSON(fileName) {
 function csvFileToJson(csvName) {
     try {
         const jsonArr = CSVToJSON().fromFile(csvName);
-        console.log("JSON array is saved.");
         return jsonArr
 
     } catch (err) {
@@ -29,22 +28,24 @@ function joinJson(stylesJson, imagesJson) {
     let newStylesArr = stylesJson.slice(0, 100)
 
     newStylesArr.forEach(item => {
+        newStylesArr = newStylesArr.filter(function( item ) {
+            return item.articleType !== 'Watches';
+        });
+
         var itemId = item.id + ".jpg"
         const imagelink = getImageLink(itemId, imagesJson)
         const price = getPrice()
         item['image'] = imagelink
         item['price'] = price
     });
-
     return newStylesArr
-
 }
 
 // get the image link from the image Json array and return the image link
 function getImageLink(styleId, Json) {
-    var imageLink = Json.find(image => {
+    const imageLink = Json.find(image => {
         if (image.filename === styleId) {
-            var imageLink = image.link
+            const imageLink = image.link
             return imageLink
         }
     })
@@ -53,7 +54,7 @@ function getImageLink(styleId, Json) {
 
 // return random price up to 250
 function getPrice() {
-    var price = Math.floor(Math.random() * 250)
+    const price = Math.floor(Math.random() * 250)
     return price
 }
 
